@@ -4,20 +4,24 @@ import streamlit as st
 import requests
 import pandas as pd
 
-API_URL = "https://shift.century.com.py/inmo/next/lotes/lotes"
 API_KEY = "F5D8A1298A8642CFE053820001C704DD"
 
+ENDPOINTS = {
+    "Lotes": "https://shift.century.com.py/inmo/next/lotes/lotes",
+    "Fracciones": "https://shift.century.com.py/inmo/next/lotes/fracciones",
+    "Clientes": "https://shift.century.com.py/inmo/next/lotes/clientes"
+}
 
 LOGO_URL = "https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png"
 
 @st.cache_data(show_spinner=False)
-def fetch_lotes():
+def fetch_data(api_url):
     headers = {
         "ApiKey": API_KEY,
         "Accept": "application/json"
     }
     try:
-        response = requests.get(API_URL, headers=headers, timeout=30)
+        response = requests.get(api_url, headers=headers, timeout=30)
         # Check if response is empty or not JSON
         if not response.text.strip():
             st.error("La API devolvió una respuesta vacía.")
@@ -137,15 +141,21 @@ def main():
         st.image(LOGO_URL, width='stretch')
         st.markdown("---")
         st.subheader("Configuración")
-        reload_data = st.button("🔄 Actualizar Datos", width='stretch')
+        selected_endpoint = st.selectbox(
+            "Seleccionar Conjunto de Datos",
+            options=list(ENDPOINTS.keys()),
+            help="Elige qué datos deseas consultar de la API."
+        )
+        st.markdown("---")
+        reload_data = st.button("Actualizar Datos", width='stretch')
         st.markdown("---")
         st.markdown("### Info")
-        st.info("Este panel permite visualizar y exportar la lista completa de lotes directamente desde la API de INMO.")
+        st.info(f"Visualizando datos de **{selected_endpoint}** directamente desde la API de INMO.")
 
     # Main Header
     st.markdown(f"""
         <div class="main-header">
-            <h1 style="color: white; margin: 0;">Consulta de Lotes - INMO</h1>
+            <h1 style="color: white; margin: 0;">Consulta de {selected_endpoint} - INMO</h1>
             <p style="margin: 0; opacity: 0.9;">Visualización avanzada y exportación de datos inmobiliarios</p>
         </div>
     """, unsafe_allow_html=True)
@@ -153,16 +163,17 @@ def main():
     col1, col2 = st.columns([3, 1])
     # col1 empty now as header is above, col2 for data loading logic
     with col2:
-        if reload_data or 'df_lotes' not in st.session_state:
-            with st.spinner("Consultando API..."):
-                st.session_state.df_lotes = fetch_lotes()
+        # If selection changes, we should reload or handle it
+        if reload_data or f'df_{selected_endpoint}' not in st.session_state:
+            with st.spinner(f"Consultando API de {selected_endpoint}..."):
+                st.session_state[f'df_{selected_endpoint}'] = fetch_data(ENDPOINTS[selected_endpoint])
 
-    df = st.session_state.get('df_lotes', pd.DataFrame())
+    df = st.session_state.get(f'df_{selected_endpoint}', pd.DataFrame())
 
     if not df.empty:
         # Dashboard Metrics
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Total Lotes", len(df))
+        m1.metric(f"Total {selected_endpoint}", len(df))
         
         status_col = next((c for c in df.columns if 'estado' in c.lower() or 'status' in c.lower()), None)
         
@@ -234,11 +245,10 @@ def main():
                 filter_df = filter_df[filter_df.index.isin(df[mask].index)]
 
         # Data Table
-        st.subheader(f"Catálogo de Lotes ({len(filter_df)} registros)")
+        st.subheader(f"Catálogo de {selected_endpoint} ({len(filter_df)} registros)")
         st.dataframe(
             filter_df, 
-            width='stretch', 
-            column_config={status_col: "Estado"} if status_col else {}
+            width='stretch'
         )
 
         st.markdown("---")
@@ -250,7 +260,7 @@ def main():
             st.download_button(
                 label="⬇️ Exportar CSV",
                 data=csv,
-                file_name=f"lotes_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.csv",
+                file_name=f"{selected_endpoint.lower()}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv",
                 width='stretch'
             )
