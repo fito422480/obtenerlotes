@@ -1,0 +1,14 @@
+.venv
+.streamlit
+.vscode
+.idea
+.eggs
+.pytest_cache
+.cache
+.streamlit
+.vscode
+.idea
+.eggs
+.pytest_cache
+.cache
+venv
