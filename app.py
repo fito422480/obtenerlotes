@@ -36,48 +36,90 @@ def fetch_lotes():
         return pd.DataFrame()
 
 def apply_custom_design():
-    st.markdown("""
+    st.markdown(f"""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
         
-        html, body, [class*="css"] {
-            font-family: 'Inter', sans-serif;
-        }
+        html, body, [class*="css"] {{
+            font-family: 'Outfit', sans-serif;
+        }}
         
-        .main {
-            background-color: #f8fafc;
-        }
+        .stApp {{
+            background-color: #ffffff;
+        }}
         
-        .stButton>button {
-            border-radius: 8px;
-            background-color: #1e293b;
+        /* Main Header Styling */
+        .main-header {{
+            background: linear-gradient(90deg, #ff0135 0%, #ff4d71 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(255, 1, 53, 0.2);
+        }}
+        
+        /* Buttons */
+        .stButton>button {{
+            border-radius: 10px;
+            background-color: #ff0135;
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
-            transition: all 0.3s ease;
-        }
+            padding: 0.6rem 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+        }}
         
-        .stButton>button:hover {
-            background-color: #334155;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
+        .stButton>button:hover {{
+            background-color: #d6002c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 1, 53, 0.3);
+            border: none;
+            color: white;
+        }}
         
-        .metric-card {
-            background-color: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-            border-left: 5px solid #1e293b;
-        }
-        
-        .sidebar-content {
-            padding: 1rem;
-        }
-        
-        h1, h2, h3 {
-            color: #1e293b;
+        /* Metric Cards */
+        [data-testid="stMetricValue"] {{
+            color: #ff0135;
+            font-size: 2.2rem;
             font-weight: 700;
-        }
+        }}
+        
+        [data-testid="stMetricLabel"] {{
+            color: #4b5563;
+            font-weight: 500;
+        }}
+        
+        .stMetric {{
+            background-color: #fffafa;
+            padding: 1.2rem;
+            border-radius: 12px;
+            border: 1px solid #ffebeb;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }}
+        
+        /* Sidebar */
+        section[data-testid="stSidebar"] {{
+            background-color: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+        }}
+        
+        /* Tables and Dataframes */
+        [data-testid="stDataFrame"] {{
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }}
+        
+        /* Expander */
+        .streamlit-expanderHeader {{
+            background-color: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }}
+        
+        h1 {{ color: #111827; font-weight: 800; }}
+        h2, h3 {{ color: #1f2937; font-weight: 700; }}
         </style>
     """, unsafe_allow_html=True)
 
@@ -101,11 +143,15 @@ def main():
         st.info("Este panel permite visualizar y exportar la lista completa de lotes directamente desde la API de INMO.")
 
     # Main Header
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.title("Consulta de Lotes - INMO")
-        st.caption("Visualización avanzada y exportación de datos inmobiliarios")
+    st.markdown(f"""
+        <div class="main-header">
+            <h1 style="color: white; margin: 0;">Consulta de Lotes - INMO</h1>
+            <p style="margin: 0; opacity: 0.9;">Visualización avanzada y exportación de datos inmobiliarios</p>
+        </div>
+    """, unsafe_allow_html=True)
     
+    col1, col2 = st.columns([3, 1])
+    # col1 empty now as header is above, col2 for data loading logic
     with col2:
         if reload_data or 'df_lotes' not in st.session_state:
             with st.spinner("Consultando API..."):
