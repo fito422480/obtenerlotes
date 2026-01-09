@@ -92,10 +92,10 @@ def main():
 
     # Sidebar
     with st.sidebar:
-        st.image(LOGO_URL, use_container_width=True)
+        st.image(LOGO_URL, width='stretch')
         st.markdown("---")
         st.subheader("Configuración")
-        reload_data = st.button("🔄 Actualizar Datos", use_container_width=True)
+        reload_data = st.button("🔄 Actualizar Datos", width='stretch')
         st.markdown("---")
         st.markdown("### Info")
         st.info("Este panel permite visualizar y exportar la lista completa de lotes directamente desde la API de INMO.")
@@ -163,7 +163,9 @@ def main():
             search_query = f_col1.text_input("🔍 Buscador global", "", help="Busca cualquier texto en todas las columnas")
             
             # Dynamic Filters by Column
+            fraccion_col = next((c for c in df.columns if 'fraccion' in c.lower()), None)
             default_filters = []
+            if fraccion_col: default_filters.append(fraccion_col)
             if status_col: default_filters.append(status_col)
             
             cols_to_filter = f_col2.multiselect(
@@ -189,7 +191,7 @@ def main():
         st.subheader(f"Catálogo de Lotes ({len(filter_df)} registros)")
         st.dataframe(
             filter_df, 
-            use_container_width=True, 
+            width='stretch', 
             column_config={status_col: "Estado"} if status_col else {}
         )
 
@@ -204,7 +206,7 @@ def main():
                 data=csv,
                 file_name=f"lotes_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv",
-                use_container_width=True
+                width='stretch'
             )
         with e1:
             st.write(f"Mostrando **{len(filter_df)}** de **{len(df)}** registros.")
