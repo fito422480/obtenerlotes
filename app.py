@@ -118,47 +118,75 @@ def main():
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("Total Lotes", len(df))
         
-        # Try to guess status column or some useful info
         status_col = next((c for c in df.columns if 'estado' in c.lower() or 'status' in c.lower()), None)
+        
         if status_col:
-            activos = len(df[df[status_col].astype(str).str.lower().str.contains('activ|libre|dispon', na=False)])
-            m2.metric("Disponibles", activos)
-            m3.metric("Ocupados/Vendidos", len(df) - activos)
+            # Full breakdown of statuses
+            status_counts = df[status_col].value_counts()
+            principal_status = status_counts.idxmax()
+            principal_count = status_counts.max()
+            
+            # Show the most frequent status as a metric
+            m2.metric(f"Estado: {principal_status}", principal_count)
+            
+            # Show the second most frequent if exists
+            if len(status_counts) > 1:
+                sec_status = status_counts.index[1]
+                sec_count = status_counts.values[1]
+                m3.metric(f"Estado: {sec_status}", sec_count)
+            else:
+                m3.metric("Actualizado", pd.Timestamp.now().strftime("%H:%M"))
         else:
             m2.metric("Columnas", len(df.columns))
-            m3.metric("Última Actualización", pd.Timestamp.now().strftime("%H:%M"))
+            m3.metric("Actualizado", pd.Timestamp.now().strftime("%H:%M"))
 
         m4.metric("Empresa", "INMO SA")
+
+        # Status Breakdown Expander
+        if status_col and len(df[status_col].unique()) > 1:
+            with st.expander("📊 Resumen Detallado de Estados", expanded=False):
+                st.write("Conteo por cada estado detectado:")
+                # Create horizontal metrics for all statuses
+                counts = df[status_col].value_counts()
+                cols = st.columns(min(len(counts), 5))
+                for i, (name, val) in enumerate(counts.items()):
+                    cols[i % 5].metric(name, val)
 
         st.markdown("---")
 
         # Filters Row
-        with st.expander("🔍 Filtros Avanzados", expanded=False):
-            f_col1, f_col2, f_col3 = st.columns(3)
+        filter_df = df.copy()
+        with st.expander("🔍 Filtros Avanzados", expanded=True if df.empty else False):
+            f_col1, f_col2 = st.columns([1, 2])
             
-            # Search filter
-            search_query = f_col1.text_input("Buscar por cualquier campo", "")
+            # Global Search
+            search_query = f_col1.text_input("🔍 Buscador global", "", help="Busca cualquier texto en todas las columnas")
             
-            # Status filter if exists
-            filter_df = df.copy()
-            if status_col:
-                selected_status = f_col2.multiselect("Estado", options=df[status_col].unique())
-                if selected_status:
-                    filter_df = filter_df[filter_df[status_col].isin(selected_status)]
+            # Dynamic Filters by Column
+            default_filters = []
+            if status_col: default_filters.append(status_col)
             
-            # Project filter if exists
-            project_col = next((c for c in df.columns if 'proyect' in c.lower() or 'nombre' in c.lower()), None)
-            if project_col:
-                selected_projects = f_col3.multiselect("Proyecto", options=df[project_col].unique())
-                if selected_projects:
-                    filter_df = filter_df[filter_df[project_col].isin(selected_projects)]
+            cols_to_filter = f_col2.multiselect(
+                "Filtrar por columnas específicas", 
+                options=df.columns.tolist(),
+                default=default_filters
+            )
+            
+            if cols_to_filter:
+                filter_cols = st.columns(3)
+                for i, col in enumerate(cols_to_filter):
+                    unique_vals = sorted(df[col].dropna().unique().astype(str).tolist())
+                    selected_vals = filter_cols[i % 3].multiselect(f"Valores en {col}", options=unique_vals, key=f"filter_{col}")
+                    if selected_vals:
+                        filter_df = filter_df[filter_df[col].astype(str).isin(selected_vals)]
 
             if search_query:
-                # Simple global search across all string columns
-                filter_df = filter_df[filter_df.astype(str).apply(lambda x: x.str.contains(search_query, case=False)).any(axis=1)]
+                # Global search across all columns
+                mask = df.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
+                filter_df = filter_df[filter_df.index.isin(df[mask].index)]
 
         # Data Table
-        st.subheader("Catálogo de Lotes")
+        st.subheader(f"Catálogo de Lotes ({len(filter_df)} registros)")
         st.dataframe(
             filter_df, 
             use_container_width=True, 
