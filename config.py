@@ -32,7 +32,7 @@ def _get_config_value(key: str, default: Optional[str] = None) -> Optional[str]:
     Returns:
         Valor de la configuración o None
     """
-    # Intentar obtener desde Streamlit Secrets (Streamlit Cloud)
+    # Intentar obtener desde Streamlit Secrets (Streamlit Cloud o local)
     try:
         import streamlit as st
         from streamlit.errors import StreamlitSecretNotFoundError
@@ -43,7 +43,7 @@ def _get_config_value(key: str, default: Optional[str] = None) -> Optional[str]:
                 value = secrets_dict.get(key, None)
                 if value:
                     return str(value)
-            except (AttributeError, KeyError, TypeError, StreamlitSecretNotFoundError):
+            except (AttributeError, KeyError, TypeError, StreamlitSecretNotFoundError, RuntimeError):
                 # Secrets no disponibles o no encontrados
                 pass
     except (ImportError, RuntimeError, AttributeError):
@@ -59,41 +59,33 @@ def _get_config_value(key: str, default: Optional[str] = None) -> Optional[str]:
     return default
 
 
-class Config:
+class ConfigMeta(type):
+    """Metaclase para permitir acceso lazy a los valores de configuración."""
+    
+    def __getattr__(cls, name: str):
+        """Permite acceso a atributos que se evalúan de forma lazy."""
+        if name == "API_KEY":
+            return _get_config_value("API_KEY")
+        elif name == "ENDPOINT_LOTES":
+            return _get_config_value("ENDPOINT_LOTES", "https://shift.century.com.py/inmo/next/lotes/lotes") or "https://shift.century.com.py/inmo/next/lotes/lotes"
+        elif name == "ENDPOINT_FRACCIONES":
+            return _get_config_value("ENDPOINT_FRACCIONES", "https://shift.century.com.py/inmo/next/lotes/fracciones") or "https://shift.century.com.py/inmo/next/lotes/fracciones"
+        elif name == "ENDPOINT_CLIENTES":
+            return _get_config_value("ENDPOINT_CLIENTES", "https://shift.century.com.py/inmo/next/lotes/clientes") or "https://shift.century.com.py/inmo/next/lotes/clientes"
+        elif name == "LOGO_URL":
+            return _get_config_value("LOGO_URL", "https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png") or "https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png"
+        elif name == "EMPRESA_NOMBRE":
+            return _get_config_value("EMPRESA_NOMBRE", "INMO SA") or "INMO SA"
+        elif name == "API_TIMEOUT":
+            timeout_str = _get_config_value("API_TIMEOUT", "30")
+            return int(timeout_str) if timeout_str else 30
+        elif name == "API_ACCEPT":
+            return _get_config_value("API_ACCEPT", "application/json") or "application/json"
+        raise AttributeError(f"'{cls.__name__}' object has no attribute '{name}'")
+
+
+class Config(metaclass=ConfigMeta):
     """Clase para manejar la configuración de la aplicación."""
-    
-    # API Configuration
-    API_KEY: Optional[str] = _get_config_value("API_KEY")
-    
-    # API Endpoints
-    ENDPOINT_LOTES: str = _get_config_value(
-        "ENDPOINT_LOTES",
-        "https://shift.century.com.py/inmo/next/lotes/lotes"
-    ) or "https://shift.century.com.py/inmo/next/lotes/lotes"
-    
-    ENDPOINT_FRACCIONES: str = _get_config_value(
-        "ENDPOINT_FRACCIONES",
-        "https://shift.century.com.py/inmo/next/lotes/fracciones"
-    ) or "https://shift.century.com.py/inmo/next/lotes/fracciones"
-    
-    ENDPOINT_CLIENTES: str = _get_config_value(
-        "ENDPOINT_CLIENTES",
-        "https://shift.century.com.py/inmo/next/lotes/clientes"
-    ) or "https://shift.century.com.py/inmo/next/lotes/clientes"
-    
-    # Application Configuration
-    LOGO_URL: str = _get_config_value(
-        "LOGO_URL",
-        "https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png"
-    ) or "https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png"
-    
-    EMPRESA_NOMBRE: str = _get_config_value("EMPRESA_NOMBRE", "INMO SA") or "INMO SA"
-    
-    # API Request Configuration
-    _api_timeout_str = _get_config_value("API_TIMEOUT", "30")
-    API_TIMEOUT: int = int(_api_timeout_str) if _api_timeout_str else 30
-    
-    API_ACCEPT: str = _get_config_value("API_ACCEPT", "application/json") or "application/json"
     
     @classmethod
     def get_endpoints(cls) -> Dict[str, str]:
