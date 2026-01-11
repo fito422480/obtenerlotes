@@ -69,18 +69,6 @@ cp .env.example .env
 # Edita .env con tu editor preferido
 ```
 
-Ejemplo de archivo `.env`:
-```env
-API_KEY=tu_api_key_aqui
-ENDPOINT_LOTES=https://shift.century.com.py/inmo/next/lotes/lotes
-ENDPOINT_FRACCIONES=https://shift.century.com.py/inmo/next/lotes/fracciones
-ENDPOINT_CLIENTES=https://shift.century.com.py/inmo/next/lotes/clientes
-LOGO_URL=https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png
-EMPRESA_NOMBRE=INMO SA
-API_TIMEOUT=30
-API_ACCEPT=application/json
-```
-
 ### Configuración para Streamlit Cloud
 
 1. Ve a tu app en [Streamlit Cloud](https://share.streamlit.io/)
