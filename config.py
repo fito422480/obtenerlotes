@@ -104,7 +104,9 @@ class Config(metaclass=ConfigMeta):
         Returns:
             tuple: (is_valid, error_message)
         """
-        if not cls.API_KEY:
+        # Obtener API_KEY directamente para evitar problemas con metaclass
+        api_key = _get_config_value("API_KEY")
+        if not api_key:
             error_msg = (
                 "API_KEY no está configurada. "
                 "Por favor, configura tu API_KEY en:\n"
