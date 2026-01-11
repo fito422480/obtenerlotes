@@ -1,14 +1,43 @@
-.venv
-.streamlit
-.vscode
-.idea
-.eggs
-.pytest_cache
-.cache
-.streamlit
-.vscode
-.idea
-.eggs
-.pytest_cache
-.cache
-venv
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing
+.pytest_cache/
+.cache/
+.coverage
+htmlcov/
+
+# Streamlit
+.streamlit/

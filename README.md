@@ -35,6 +35,45 @@ Una herramienta profesional diseñada para la **visualización, filtrado y expor
     pip install -r requeriments.txt
     ```
 
+4.  **Configurar variables de entorno:**
+    ```bash
+    # Copia el archivo de ejemplo y edítalo con tus valores
+    cp .env.example .env
+    # Edita .env con tu editor preferido y configura tu API_KEY
+    ```
+
+## ⚙️ Configuración
+
+La aplicación utiliza variables de entorno para su configuración. Copia el archivo `.env.example` a `.env` y configura las siguientes variables:
+
+### Variables Requeridas
+
+- **`API_KEY`**: Tu clave de API para acceder a los servicios de INMO
+
+### Variables Opcionales
+
+- **`ENDPOINT_LOTES`**: URL del endpoint para lotes (tiene un valor por defecto)
+- **`ENDPOINT_FRACCIONES`**: URL del endpoint para fracciones (tiene un valor por defecto)
+- **`ENDPOINT_CLIENTES`**: URL del endpoint para clientes (tiene un valor por defecto)
+- **`LOGO_URL`**: URL del logo de la empresa (tiene un valor por defecto)
+- **`EMPRESA_NOMBRE`**: Nombre de la empresa (por defecto: "INMO SA")
+- **`API_TIMEOUT`**: Tiempo de espera para las peticiones API en segundos (por defecto: 30)
+- **`API_ACCEPT`**: Tipo de contenido aceptado (por defecto: "application/json")
+
+Ejemplo de archivo `.env`:
+```env
+API_KEY=tu_api_key_aqui
+ENDPOINT_LOTES=https://shift.century.com.py/inmo/next/lotes/lotes
+ENDPOINT_FRACCIONES=https://shift.century.com.py/inmo/next/lotes/fracciones
+ENDPOINT_CLIENTES=https://shift.century.com.py/inmo/next/lotes/clientes
+LOGO_URL=https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png
+EMPRESA_NOMBRE=INMO SA
+API_TIMEOUT=30
+API_ACCEPT=application/json
+```
+
+> ⚠️ **Importante**: El archivo `.env` no debe ser subido al repositorio (ya está incluido en `.gitignore`). Usa `.env.example` como plantilla.
+
 ## 🛠️ Uso
 
 Para iniciar la aplicación, ejecuta el siguiente comando en tu terminal:
@@ -45,17 +84,13 @@ streamlit run app.py
 
 La aplicación se abrirá automáticamente en tu navegador predeterminado (usualmente en `http://localhost:8501`).
 
-## ⚙️ Configuración
-
-Actualmente, la aplicación utiliza una `API_KEY` configurada internamente para acceder a:
-`https://shift.century.com.py/inmo/next/lotes/lotes`
-
 ## 👨‍💻 Tecnologías
 
 -   **Python:** Lógica del backend.
 -   **Streamlit:** Interfaz de usuario interactiva.
 -   **Pandas:** Procesamiento y limpieza de datos.
 -   **Requests:** Comunicación con la API REST.
+-   **python-dotenv:** Gestión de variables de entorno.
 
 ---
 Desarrollado con ❤️ para **INMO S.A.**
