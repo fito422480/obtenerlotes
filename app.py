@@ -620,7 +620,7 @@ def render_export_section(filter_df: pd.DataFrame, df: pd.DataFrame, selected_en
         try:
             csv = filter_df.to_csv(index=False, sep=";", encoding="utf-8-sig")
             st.download_button(
-                label="⬇️ Exportar CSV",
+                label="Exportar CSV",
                 data=csv,
                 file_name=f"{selected_endpoint.lower()}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv",
