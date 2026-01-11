@@ -636,7 +636,7 @@ def render_export_section(filter_df: pd.DataFrame, df: pd.DataFrame, selected_en
 def main():
     """Función principal de la aplicación."""
     st.set_page_config(
-        page_title="Inmo - Panel de Lotes",
+        page_title="Inmo",
         page_icon=f"{Config.LOGO_URL}",
         layout="wide",
         initial_sidebar_state="expanded"
