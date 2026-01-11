@@ -32,7 +32,7 @@ Una herramienta profesional diseñada para la **visualización, filtrado y expor
 
 3.  **Instalar dependencias:**
     ```bash
-    pip install -r requeriments.txt
+    pip install -r requirements.txt
     ```
 
 4.  **Configurar variables de entorno:**
@@ -44,7 +44,7 @@ Una herramienta profesional diseñada para la **visualización, filtrado y expor
 
 ## ⚙️ Configuración
 
-La aplicación utiliza variables de entorno para su configuración. Copia el archivo `.env.example` a `.env` y configura las siguientes variables:
+La aplicación utiliza variables de entorno para su configuración. Soporta tanto `.env` para desarrollo local como **Streamlit Secrets** para producción en Streamlit Cloud.
 
 ### Variables Requeridas
 
@@ -60,6 +60,15 @@ La aplicación utiliza variables de entorno para su configuración. Copia el arc
 - **`API_TIMEOUT`**: Tiempo de espera para las peticiones API en segundos (por defecto: 30)
 - **`API_ACCEPT`**: Tipo de contenido aceptado (por defecto: "application/json")
 
+### Configuración para Desarrollo Local
+
+Copia el archivo `.env.example` a `.env` y configura tus variables:
+
+```bash
+cp .env.example .env
+# Edita .env con tu editor preferido
+```
+
 Ejemplo de archivo `.env`:
 ```env
 API_KEY=tu_api_key_aqui
@@ -72,7 +81,26 @@ API_TIMEOUT=30
 API_ACCEPT=application/json
 ```
 
-> ⚠️ **Importante**: El archivo `.env` no debe ser subido al repositorio (ya está incluido en `.gitignore`). Usa `.env.example` como plantilla.
+### Configuración para Streamlit Cloud
+
+1. Ve a tu app en [Streamlit Cloud](https://share.streamlit.io/)
+2. Click en **"Settings"** (⚙️) → **"Secrets"**
+3. Pega el contenido del archivo `.streamlit/secrets.toml.example` y configura tus valores:
+
+```toml
+API_KEY = "tu_api_key_aqui"
+ENDPOINT_LOTES = "https://shift.century.com.py/inmo/next/lotes/lotes"
+ENDPOINT_FRACCIONES = "https://shift.century.com.py/inmo/next/lotes/fracciones"
+ENDPOINT_CLIENTES = "https://shift.century.com.py/inmo/next/lotes/clientes"
+LOGO_URL = "https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png"
+EMPRESA_NOMBRE = "INMO SA"
+API_TIMEOUT = "30"
+API_ACCEPT = "application/json"
+```
+
+> ⚠️ **Importante**: 
+> - El archivo `.env` no debe ser subido al repositorio (ya está incluido en `.gitignore`)
+> - Los secrets de Streamlit Cloud son privados y seguros
 
 ## 🛠️ Uso
 

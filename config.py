@@ -1,46 +1,99 @@
 # -*- coding: utf-8 -*-
 """
 Módulo de configuración para cargar y validar variables de entorno.
+Soporta tanto .env local como Streamlit Secrets para producción.
 """
 
 import os
 from typing import Dict, Optional, Tuple
-from dotenv import load_dotenv
 
-# Cargar variables de entorno desde el archivo .env
-load_dotenv()
+# Intentar cargar variables desde .env (solo funciona localmente)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv no está disponible, continuar sin él
+    pass
+
+
+def _get_config_value(key: str, default: Optional[str] = None) -> Optional[str]:
+    """
+    Obtiene un valor de configuración desde múltiples fuentes.
+    
+    Orden de prioridad:
+    1. Streamlit Secrets (si está disponible)
+    2. Variables de entorno del sistema (os.getenv)
+    3. Valor por defecto
+    
+    Args:
+        key: Nombre de la variable de configuración
+        default: Valor por defecto si no se encuentra
+        
+    Returns:
+        Valor de la configuración o None
+    """
+    # Intentar obtener desde Streamlit Secrets (Streamlit Cloud)
+    try:
+        import streamlit as st
+        from streamlit.errors import StreamlitSecretNotFoundError
+        if hasattr(st, 'secrets'):
+            try:
+                # Intentar acceder a los secrets
+                secrets_dict = dict(st.secrets)
+                value = secrets_dict.get(key, None)
+                if value:
+                    return str(value)
+            except (AttributeError, KeyError, TypeError, StreamlitSecretNotFoundError):
+                # Secrets no disponibles o no encontrados
+                pass
+    except (ImportError, RuntimeError, AttributeError):
+        # Streamlit no está disponible o no está inicializado
+        pass
+    
+    # Intentar obtener desde variables de entorno
+    value = os.getenv(key)
+    if value:
+        return value
+    
+    # Usar valor por defecto
+    return default
 
 
 class Config:
     """Clase para manejar la configuración de la aplicación."""
     
     # API Configuration
-    API_KEY: Optional[str] = os.getenv("API_KEY")
+    API_KEY: Optional[str] = _get_config_value("API_KEY")
     
     # API Endpoints
-    ENDPOINT_LOTES: str = os.getenv(
+    ENDPOINT_LOTES: str = _get_config_value(
         "ENDPOINT_LOTES",
         "https://shift.century.com.py/inmo/next/lotes/lotes"
-    )
-    ENDPOINT_FRACCIONES: str = os.getenv(
+    ) or "https://shift.century.com.py/inmo/next/lotes/lotes"
+    
+    ENDPOINT_FRACCIONES: str = _get_config_value(
         "ENDPOINT_FRACCIONES",
         "https://shift.century.com.py/inmo/next/lotes/fracciones"
-    )
-    ENDPOINT_CLIENTES: str = os.getenv(
+    ) or "https://shift.century.com.py/inmo/next/lotes/fracciones"
+    
+    ENDPOINT_CLIENTES: str = _get_config_value(
         "ENDPOINT_CLIENTES",
         "https://shift.century.com.py/inmo/next/lotes/clientes"
-    )
+    ) or "https://shift.century.com.py/inmo/next/lotes/clientes"
     
     # Application Configuration
-    LOGO_URL: str = os.getenv(
+    LOGO_URL: str = _get_config_value(
         "LOGO_URL",
         "https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png"
-    )
-    EMPRESA_NOMBRE: str = os.getenv("EMPRESA_NOMBRE", "INMO SA")
+    ) or "https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png"
+    
+    EMPRESA_NOMBRE: str = _get_config_value("EMPRESA_NOMBRE", "INMO SA") or "INMO SA"
     
     # API Request Configuration
-    API_TIMEOUT: int = int(os.getenv("API_TIMEOUT", "30"))
-    API_ACCEPT: str = os.getenv("API_ACCEPT", "application/json")
+    _api_timeout_str = _get_config_value("API_TIMEOUT", "30")
+    API_TIMEOUT: int = int(_api_timeout_str) if _api_timeout_str else 30
+    
+    API_ACCEPT: str = _get_config_value("API_ACCEPT", "application/json") or "application/json"
     
     @classmethod
     def get_endpoints(cls) -> Dict[str, str]:
@@ -60,7 +113,13 @@ class Config:
             tuple: (is_valid, error_message)
         """
         if not cls.API_KEY:
-            return False, "API_KEY no está configurada. Por favor, configura tu API_KEY en el archivo .env"
+            error_msg = (
+                "API_KEY no está configurada. "
+                "Por favor, configura tu API_KEY en:\n"
+                "- Archivo .env (para desarrollo local)\n"
+                "- Streamlit Secrets (para Streamlit Cloud)"
+            )
+            return False, error_msg
         
         return True, None
     

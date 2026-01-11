@@ -12,7 +12,11 @@ def validate_configuration():
     is_valid, error_msg = Config.validate_required_vars()
     if not is_valid:
         st.error(f"⚠️ Error de Configuración: {error_msg}")
-        st.info("💡 Tip: Copia el archivo `.env.example` a `.env` y configura tus variables.")
+        st.info("""
+        💡 **Tips de configuración:**
+        - **Desarrollo local:** Copia `.env.example` a `.env` y configura tu API_KEY
+        - **Streamlit Cloud:** Configura los secrets en Settings → Secrets de tu app
+        """)
         st.stop()
     return True
 
