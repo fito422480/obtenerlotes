@@ -36,15 +36,22 @@ def _get_config_value(key: str, default: Optional[str] = None) -> Optional[str]:
     try:
         import streamlit as st
         from streamlit.errors import StreamlitSecretNotFoundError
-        if hasattr(st, 'secrets'):
+        
+        # Intentar acceder directamente a st.secrets sin convertir a dict primero
+        try:
+            if hasattr(st, 'secrets'):
+                # Acceder directamente al secret usando getattr
+                secret_value = getattr(st.secrets, key, None)
+                if secret_value is not None:
+                    return str(secret_value)
+        except (AttributeError, KeyError, TypeError, StreamlitSecretNotFoundError, RuntimeError):
+            # Si el acceso directo falla, intentar con dict
             try:
-                # Intentar acceder a los secrets
                 secrets_dict = dict(st.secrets)
                 value = secrets_dict.get(key, None)
                 if value:
                     return str(value)
             except (AttributeError, KeyError, TypeError, StreamlitSecretNotFoundError, RuntimeError):
-                # Secrets no disponibles o no encontrados
                 pass
     except (ImportError, RuntimeError, AttributeError):
         # Streamlit no está disponible o no está inicializado
