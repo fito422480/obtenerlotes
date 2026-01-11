@@ -1,4 +1,4 @@
-# 🏗️ INMO - Exportador de Lotes
+# INMO - Exportador de Lotes
 
 ![INMO Logo](https://inmo.com.py/wp-content/uploads/2024/05/inmoLogo2.000a43bf-1.png)
 
