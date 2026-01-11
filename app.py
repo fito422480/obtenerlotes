@@ -557,6 +557,34 @@ def render_status_breakdown(df: pd.DataFrame, status_col: str):
                 cols[i % 5].metric(name, val)
 
 
+def format_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Formatea el DataFrame para mejorar la visualización.
+    Elimina .0 de números enteros almacenados como float.
+    
+    Args:
+        df: DataFrame a formatear
+        
+    Returns:
+        DataFrame formateado
+    """
+    df_formatted = df.copy()
+    
+    # Para cada columna numérica, convertir enteros (que están como float) a int
+    for col in df_formatted.columns:
+        if df_formatted[col].dtype == 'float64':
+            # Intentar convertir a int si todos los valores son enteros
+            try:
+                # Verificar si los valores no nulos son todos enteros
+                non_null = df_formatted[col].dropna()
+                if len(non_null) > 0 and (non_null % 1 == 0).all():
+                    df_formatted[col] = df_formatted[col].astype('Int64')  # Nullable integer
+            except (TypeError, ValueError):
+                pass
+    
+    return df_formatted
+
+
 def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
     """
     Aplica filtros al DataFrame basado en las selecciones del usuario.
@@ -594,14 +622,38 @@ def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
         if cols_to_filter:
             filter_cols = st.columns(3)
             for i, col in enumerate(cols_to_filter):
-                unique_vals = sorted(df[col].dropna().unique().astype(str).tolist())
+                # Obtener valores únicos y formatearlos (quitar .0 de enteros)
+                unique_vals_raw = df[col].dropna().unique()
+                # Formatear valores: si es float y es entero, mostrar sin .0
+                unique_vals = []
+                for val in unique_vals_raw:
+                    if isinstance(val, float) and val == int(val):
+                        unique_vals.append(str(int(val)))
+                    else:
+                        unique_vals.append(str(val))
+                unique_vals = sorted(unique_vals)
+                
                 selected_vals = filter_cols[i % 3].multiselect(
                     f"Valores en {col}",
                     options=unique_vals,
                     key=f"filter_{col}"
                 )
                 if selected_vals:
-                    filter_df = filter_df[filter_df[col].astype(str).isin(selected_vals)]
+                    # Crear máscara de filtrado considerando ambos formatos (con y sin .0)
+                    mask = pd.Series([False] * len(filter_df), index=filter_df.index)
+                    for val in selected_vals:
+                        try:
+                            # Intentar convertir a float para comparación numérica
+                            float_val = float(val)
+                            # Comparar con el valor numérico original
+                            if filter_df[col].dtype in ['float64', 'Int64', 'int64']:
+                                mask = mask | (filter_df[col] == float_val)
+                            # También comparar como string
+                            mask = mask | (filter_df[col].astype(str) == val)
+                        except (ValueError, TypeError):
+                            # Si no es numérico, comparar solo como string
+                            mask = mask | (filter_df[col].astype(str) == val)
+                    filter_df = filter_df[mask]
 
         if search_query:
             # Búsqueda global en todas las columnas
@@ -618,7 +670,9 @@ def render_export_section(filter_df: pd.DataFrame, df: pd.DataFrame, selected_en
     e1, e2 = st.columns([4, 1])
     with e2:
         try:
-            csv = filter_df.to_csv(index=False, sep=";", encoding="utf-8-sig")
+            # Formatear DataFrame antes de exportar (quitar .0 de enteros)
+            filter_df_export = format_dataframe(filter_df)
+            csv = filter_df_export.to_csv(index=False, sep=";", encoding="utf-8-sig")
             st.download_button(
                 label="Exportar CSV",
                 data=csv,
@@ -680,9 +734,12 @@ def main():
         # Filtros
         filter_df = apply_filters(df)
         
+        # Formatear DataFrame (quitar .0 de enteros)
+        filter_df_formatted = format_dataframe(filter_df)
+        
         # Tabla de datos
         st.subheader(f"Catálogo de {selected_endpoint} ({len(filter_df)} registros)")
-        st.dataframe(filter_df, width='stretch')
+        st.dataframe(filter_df_formatted, width='stretch')
 
         st.markdown("---")
         

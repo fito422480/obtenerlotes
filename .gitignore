@@ -37,6 +37,7 @@ wheels/
 htmlcov/
 
 # Streamlit
+.streamlit/
 .env
 .env.example
 .env.local
