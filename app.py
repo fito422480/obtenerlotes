@@ -501,7 +501,7 @@ def render_sidebar(endpoints: dict) -> tuple[str, bool]:
             help="Elige qué datos deseas consultar de la API."
         )
         st.markdown("---")
-        reload_data = st.button("🔄 Actualizar Datos", use_container_width=True)
+        reload_data = st.button("Actualizar Datos", width='stretch')
         st.markdown("---")
         st.markdown("### Info")
         st.info(f"Visualizando datos de **{selected_endpoint}** directamente desde la API de INMO.")
@@ -624,7 +624,7 @@ def render_export_section(filter_df: pd.DataFrame, df: pd.DataFrame, selected_en
                 data=csv,
                 file_name=f"{selected_endpoint.lower()}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv",
-                use_container_width=True
+                width='stretch'
             )
         except Exception as e:
             st.error(f"⚠️ Error al generar CSV: {e}")
@@ -655,7 +655,7 @@ def main():
     # Header principal
     st.markdown(f"""
         <div class="main-header">
-            <h1 style="color: white; margin: 0;">Consulta de {selected_endpoint} - INMO</h1>
+            <h1 style="color: white; margin: 0;">Consulta de {selected_endpoint}</h1>
             <p style="margin: 0; opacity: 0.9;">Visualización avanzada y exportación de datos inmobiliarios</p>
         </div>
     """, unsafe_allow_html=True)
@@ -681,7 +681,7 @@ def main():
         
         # Tabla de datos
         st.subheader(f"Catálogo de {selected_endpoint} ({len(filter_df)} registros)")
-        st.dataframe(filter_df, use_container_width=True)
+        st.dataframe(filter_df, width='stretch')
 
         st.markdown("---")
         
