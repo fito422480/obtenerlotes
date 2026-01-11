@@ -1,11 +1,8 @@
 # Virtual environments
 venv/
 .venv/
-env/
-.env/
 
 # Environment variables
-.env
 
 # IDE
 .vscode/
@@ -41,3 +38,15 @@ htmlcov/
 
 # Streamlit
 .streamlit/
+.env
+.env.example
+.env.local
+.env.production
+.env.development
+.env.test
+.env.staging
+.env.production
+.env.development
+.env.test
+.env.staging
+env/
